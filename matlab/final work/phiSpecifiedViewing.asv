@@ -1,7 +1,7 @@
 function  phiSpecifiedViewing()
-
+% Prompt the user for the number of segments
 n = input('Enter the number of segments: ');
-params = []; % Initialize
+params = []; % Initialize an empty matrix
 
 for i = 1:n
     fprintf('Enter data in [meters] for segment %d:\n', i);
@@ -34,26 +34,11 @@ for i = 1:n
         end
     end
 end
-
 disp('Check of Parameter Results (segment, l1, l2, l3, kappa, phi, ell):');
 disp(size(params)); % Verify Dimensions
 
-% Prompt the user for the range of phi values they would like to analyze
-min_phi_deg = input('Enter the MINimum value for phi (in degrees): ');
-max_phi_deg = input('Enter the MAXimum value for phi (in degrees): '); % Could add validation
 
-% Convert the range to radians
-min_phi_rad = deg2rad(min_phi_deg);
-max_phi_rad = deg2rad(max_phi_deg);
 
-% Filter the params matrix based on the phi range
-filtered_params = params(params(:,6) >= min_phi_rad & params(:,6) <= max_phi_rad, :);
-
-% Display the filtered parameters
-disp('Filtered Parameter Results (segment, l1, l2, l3, kappa, phi, ell):');
-disp(filtered_params);
-
-end
 
 %{
 g = robotindependentmapping(kappa, phi, ell, 20);
