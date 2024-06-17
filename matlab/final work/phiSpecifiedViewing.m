@@ -7,15 +7,19 @@ for i = 1:n
     fprintf('Enter data in [meters] for segment %d:\n', i);
     
     % Prompt for minimum and maximum values, and step size for the current segment
-    min_l1 = input('Enter the MINimum value for l: ');
-    min_l2 = min_l1;%input('Enter the MINimum value for l2: ');
-    min_l3 = min_l1;%input('Enter the MINimum value for l3: ');
-    max_l1 = input('Enter the MAXimum value for l: ');
-    max_l2 = max_l1;%input('Enter the MAXimum value for l2: ');   
-    max_l3 = max_l1;%input('Enter the MAXimum value for l3: ');
-    d = input('Enter d: ');
-    num_steps = input('Enter the number of steps: ');
-    
+    min_l1 = 1; min_l2 = min_l1;  min_l3 = min_l1;
+    max_l1 = 3; max_l2 = max_l1; max_l3 = max_l1 ;
+    d = 5; num_steps = 3;
+    %{
+        min_l1 = input('Enter the MINimum value for l: ');
+        min_l2 = min_l1;%input('Enter the MINimum value for l2: ');
+        min_l3 = min_l1;%input('Enter the MINimum value for l3: ');
+        max_l1 = input('Enter the MAXimum value for l: ');
+        max_l2 = max_l1;%input('Enter the MAXimum value for l2: ');   
+        max_l3 = max_l1;%input('Enter the MAXimum value for l3: ');
+        d = input('Enter d: ');
+        num_steps = input('Enter the number of steps: ');
+        %}
     % Calculate the step increments
     step_l1 = (max_l1 - min_l1) / (num_steps - 1);
     step_l2 = (max_l2 - min_l2) / (num_steps - 1);
@@ -37,14 +41,44 @@ end
 
 disp('Check of Parameter Results (segment, l1, l2, l3, kappa, phi, ell):');
 disp(size(params)); % Verify Dimensions
+disp(params);
 
-% Any segment two within 5 degrees of segment 1 can be used as second/third
-% etc. let mapping function do stacking work
+% Initialize a new matrix to store parameters with mapping indices
+params_with_mapping = [];
+
+% Iterate over the params matrix and run each set of kappa, phi, and ell through robotindependentmapping
+for idx = 1:size(params, 1)
+        if params(idx, 1) == 1 
+        kappa = params(idx, 5);
+        phi = params(idx, 6);
+        ell = params(idx, 7);
+        
+        % Call the robotindependentmapping function and store the result
+        mapping_result = robotindependentmapping(kappa, phi, ell, 10);
+        
+        % Create a variable name dynamically to store each mapping result
+        mapping_name = ['mapping_' num2str(idx)];
+        eval([mapping_name ' = mapping_result;']);
+        
+        % Append the parameters and the index to the new matrix
+        params_with_mapping = [params_with_mapping; params(idx, :), idx];
+        end
+end
+
+% Display the updated params with mapping indices
+disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index):');
+disp(params_with_mapping);
+
+
+% Now it is mapping everything but not stacking, need to choose phi
+% tolerance and stack, leave line to make this an optional input
+    % Any segment two within 5 degrees of segment 1 can be used as second/third
+    % etc. let mapping function do stacking work
 
 % Run g here with one segment and two segment the sort back into the
 % matrix the vx/y/z and x/y/z
 
-
+%{
 
 % Prompt the user for the range of phi values they would like to analyze
 min_phi_deg = input('Enter the MINimum value for phi (in degrees): ');
@@ -62,6 +96,7 @@ disp('Check Dimensions of Filtered Parameter Results (segment, l1, l2, l3, kappa
 disp(size(filtered_params)); % Verify Dimensions
 
 end
+%}
 
 % Calculate engle to horizatnal
 % 

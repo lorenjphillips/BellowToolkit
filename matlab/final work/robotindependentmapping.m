@@ -38,6 +38,9 @@ function g = robotindependentmapping(kappa, phi, ell, ptsperseg)
         ptsperseg = double(ptsperseg)*ones(1,numseg);
     end
 
+    % Ensure ptsperseg is double for calculations
+    ptsperseg = double(ptsperseg);
+
     g = zeros(sum(ptsperseg),16);
     T_base = eye(4);
     for i=1:numseg
