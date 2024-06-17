@@ -7,12 +7,12 @@ for i = 1:n
     fprintf('Enter data in [meters] for segment %d:\n', i);
     
     % Prompt for minimum and maximum values, and step size for the current segment
-    min_l1 = input('Enter the MINimum value for l1: ');
-    min_l2 = input('Enter the MINimum value for l2: ');
-    min_l3 = input('Enter the MINimum value for l3: ');
-    max_l1 = input('Enter the MAXimum value for l1: ');
-    max_l2 = input('Enter the MAXimum value for l2: ');   
-    max_l3 = input('Enter the MAXimum value for l3: ');
+    min_l1 = input('Enter the MINimum value for l: ');
+    min_l2 = min_l1;%input('Enter the MINimum value for l2: ');
+    min_l3 = min_l1;%input('Enter the MINimum value for l3: ');
+    max_l1 = input('Enter the MAXimum value for l: ');
+    max_l2 = max_l1;%input('Enter the MAXimum value for l2: ');   
+    max_l3 = max_l1;%input('Enter the MAXimum value for l3: ');
     d = input('Enter d: ');
     num_steps = input('Enter the number of steps: ');
     
@@ -29,7 +29,7 @@ for i = 1:n
                 phi = atan2(sqrt(3) * (l2 + l3 - 2 * l1), 3 * (l2 - l3));
                 ell = (l1 + l2 + l3) / 3;
                 
-                params = [params; i, l1, l2, l3, kappa, phi, ell]; 
+                params = [params; i, l1, l2, l3, kappa, phi, ell];
             end
         end
     end
@@ -37,6 +37,14 @@ end
 
 disp('Check of Parameter Results (segment, l1, l2, l3, kappa, phi, ell):');
 disp(size(params)); % Verify Dimensions
+
+% Any segment two within 5 degrees of segment 1 can be used as second/third
+% etc. let mapping function do stacking work
+
+% Run g here with one segment and two segment the sort back into the
+% matrix the vx/y/z and x/y/z
+
+
 
 % Prompt the user for the range of phi values they would like to analyze
 min_phi_deg = input('Enter the MINimum value for phi (in degrees): ');
@@ -50,14 +58,21 @@ max_phi_rad = deg2rad(max_phi_deg);
 filtered_params = params(params(:,6) >= min_phi_rad & params(:,6) <= max_phi_rad, :);
 
 % Display the filtered parameters
-disp('Filtered Parameter Results (segment, l1, l2, l3, kappa, phi, ell):');
-disp(filtered_params);
+disp('Check Dimensions of Filtered Parameter Results (segment, l1, l2, l3, kappa, phi, ell):');
+disp(size(filtered_params)); % Verify Dimensions
 
 end
 
+% Calculate engle to horizatnal
+% 
+% PROMPT List all final angles in table
+%
+% PROMPT and box plot them (angles)
+
+% PROMPT 3D plot (use quiver and position info from the matrix
+
 %{
 g = robotindependentmapping(kappa, phi, ell, 20);
-assignin('base','g',g)
     
 % Extract the components of the vector from the last row of g
 vx = g(end, 9);
@@ -76,8 +91,5 @@ angle_rad = acos(v_proj_mag / v_mag);
 % Convert the angle from radians to degrees
 angle_deg = rad2deg(angle_rad);
 
-% Display the result
-disp(['The angle with respect to the x-y plane is ', num2str(angle_deg), ' degrees']);
-disp(g)
 end
 %}
