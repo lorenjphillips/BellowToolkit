@@ -5,11 +5,11 @@ params = []; % Initialize
 
 for i = 1:n
     fprintf('Enter data in [meters] for segment %d:\n', i);
+   
+    min_l1 = .01; min_l2 = min_l1;  min_l3 = min_l1;  % Test Values
+    max_l1 = .03; max_l2 = max_l1; max_l3 = max_l1 ;  % Test Values
+    d = .005; num_steps = 7;  % Test Values
     
-    % Test Values
-    min_l1 = .01; min_l2 = min_l1;  min_l3 = min_l1;
-    max_l1 = .03; max_l2 = max_l1; max_l3 = max_l1 ;
-    d = .005; num_steps = 7;
     %{
     % Prompt for minimum and maximum values, and step size for the current segment
         min_l1 = input('Enter the MINimum value for l: ');
@@ -20,9 +20,9 @@ for i = 1:n
         max_l3 = max_l1;%input('Enter the MAXimum value for l3: ');
         d = input('Enter d: ');
         num_steps = input('Enter the number of steps: ');
-        %}
-    % Calculate the step increments
-    step_l1 = (max_l1 - min_l1) / (num_steps - 1);
+    %}
+
+    step_l1 = (max_l1 - min_l1) / (num_steps - 1); % Calculate the step increments
     step_l2 = (max_l2 - min_l2) / (num_steps - 1);
     step_l3 = (max_l3 - min_l3) / (num_steps - 1);
  
@@ -66,40 +66,25 @@ for idx = 1:size(params, 1)
         params_with_mapping = [params_with_mapping; params(idx, :), idx];
     end
 end
+%disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index):');
+%disp('Size of new Params matrix: ',params_with_mapping);
+%disp('Size of mapping results: ',size(mapping_results));
 
-% Display the updated params with mapping indices
-disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index):');
-disp(params_with_mapping);
-disp(mapping_results)
-
-% Plotting
+%% Plotting
 figure;
 hold on;
-
-% Initialize variables to store all points for dynamic scaling
-all_points = [];
-
+all_points = []; % Initialize variables for dynamic scaling
 for idx = 1:size(mapping_results, 3)
     g = mapping_results(:, :, idx);
-    
-    % Extract the components of the vector from the last row of g
-    vx = g(end, 9);
+    vx = g(end, 9); % Extract the components of the vector
     vy = g(end, 10);
     vz = g(end, 11);
-    
-    % Extract the origin of the vector from the last row of g
-    x = g(end, 13);
+    x = g(end, 13); % Extract the origin of the vector
     y = g(end, 14);
     z = g(end, 15);
-    
-    % Store the points for later scaling
     all_points = [all_points; x, y, z, vx, vy, vz];
 end
-
-% Calculate dynamic scale factor based on the range of the data
-scale_factor = 0.1 * max(max(all_points(:, 1:3)) - min(all_points(:, 1:3)));
-
-% Plot each vector with the dynamic scale factor
+scale_factor = 0.1 * max(max(all_points(:, 1:3)) - min(all_points(:, 1:3))); % Dynamic scale factor
 for i = 1:size(all_points, 1)
     quiver3(all_points(i, 1), all_points(i, 2), all_points(i, 3), ...
             all_points(i, 4), all_points(i, 5), all_points(i, 6), ...
