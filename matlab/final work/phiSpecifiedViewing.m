@@ -6,11 +6,12 @@ params = []; % Initialize
 for i = 1:n
     fprintf('Enter data in [meters] for segment %d:\n', i);
     
-    % Prompt for minimum and maximum values, and step size for the current segment
+    % Test Values
     min_l1 = 1; min_l2 = min_l1;  min_l3 = min_l1;
     max_l1 = 3; max_l2 = max_l1; max_l3 = max_l1 ;
     d = 5; num_steps = 3;
     %{
+    % Prompt for minimum and maximum values, and step size for the current segment
         min_l1 = input('Enter the MINimum value for l: ');
         min_l2 = min_l1;%input('Enter the MINimum value for l2: ');
         min_l3 = min_l1;%input('Enter the MINimum value for l3: ');
@@ -62,12 +63,15 @@ for idx = 1:size(params, 1)
         
         % Append the parameters and the index to the new matrix
         params_with_mapping = [params_with_mapping; params(idx, :), idx];
+        
         end
 end
 
 % Display the updated params with mapping indices
 disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index):');
 disp(params_with_mapping);
+disp(size(params_with_mapping))
+
 
 
 % Now it is mapping everything but not stacking, need to choose phi
