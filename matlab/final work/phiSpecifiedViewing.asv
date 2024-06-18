@@ -47,6 +47,38 @@ disp(params);
 % Initialize a new matrix to store parameters with mapping indices
 params_with_mapping = [];
 
+% Array to store all mapping results
+mapping_results = [];
+
+% Iterate over the params matrix and run each set of kappa, phi, and ell through robotindependentmapping
+for idx = 1:size(params, 1)
+    if params(idx, 1) == 1 % Only process if the segment is 1
+        kappa = params(idx, 5);
+        phi = params(idx, 6);
+        ell = params(idx, 7);
+        
+        % Call the robotindependentmapping function and store the result
+        mapping_result = robotindependentmapping(kappa, phi, ell, 10);
+        
+        % Store the mapping result in the array
+        mapping_results = cat(3, mapping_results, mapping_result);
+        
+        % Append the parameters and the index to the new matrix
+        params_with_mapping = [params_with_mapping; params(idx, :), idx];
+    end
+end
+
+% Display the updated params with mapping indices
+disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index):');
+disp(params_with_mapping);
+disp(mapping_)
+
+
+%{
+
+% Initialize a new matrix to store parameters with mapping indices
+params_with_mapping = [];
+
 % Iterate over the params matrix and run each set of kappa, phi, and ell through robotindependentmapping
 for idx = 1:size(params, 1)
         if params(idx, 1) == 1 
@@ -72,12 +104,74 @@ disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_i
 disp(params_with_mapping);
 disp(size(params_with_mapping))
 
+%}
 
+%% EXTRA NOTES
+%{
+% Extract the components of the vector from the last row of g
+vx = g(end, 9);
+vy = g(end, 10);
+vz = g(end, 11);
+
+% Extract the origin of the vector from the last row of g
+x = g(end, 9);
+y = g(end, 10);
+z = g(end, 11);
+
+% Calculate the magnitude of the vector
+v_mag = sqrt(vx^2 + vy^2 + vz^2);
+
+% Calculate the magnitude of the projection of the vector onto the x-y plane
+v_proj_mag = sqrt(vx^2 + vy^2);
+
+% Calculate the angle between the vector and the x-y plane
+angle_rad = acos(v_proj_mag / v_mag);
+
+% Convert the angle from radians to degrees
+angle_deg = rad2deg(angle_rad);
+%}
+%% PLOT SETUP
+
+%{
+    fig=figure;
+    fig.Color = [1 1 1]; 
+    hold on
+    set(fig,'Position',[0 0 1280 1024]);
+
+    % Axes, Labels
+    clearance = 0.03;
+    axis([-(max(abs(g(:,13)))+clearance) max(abs(g(:,13)))+clearance ...
+          -(max(abs(g(:,14)))+clearance) max(abs(g(:,14)))+clearance ...
+          0 curvelength+clearance])
+    ax=gca;
+    ax.GridAlpha=0.3;
+
+    xlabel('x (m)')
+    ylabel('y (m)')
+    zlabel('z (m)')
+    grid on
+    view([0.5 0.5 0.5])
+    daspect([1 1 1])
+
+    col = linspace(0.2,0.8,numseg);
+
+%}
+
+%% MORE NOTES
+%{
+    % THE FIRST 3 ARE POINT, LAST 3 ARE VECTORS, These specify the starting point (origin) of the arrow. 
+quiver3(g(end,13),g(end,14),g(end,15),g(end,9),g(end,10),g(end,11),0.01,'LineWidth',3,'Color',[0 0 1]);
+
+%}
 
 % Now it is mapping everything but not stacking, need to choose phi
 % tolerance and stack, leave line to make this an optional input
     % Any segment two within 5 degrees of segment 1 can be used as second/third
     % etc. let mapping function do stacking work
+
+
+
+
 
 % Run g here with one segment and two segment the sort back into the
 % matrix the vx/y/z and x/y/z
@@ -109,26 +203,3 @@ end
 % PROMPT and box plot them (angles)
 
 % PROMPT 3D plot (use quiver and position info from the matrix
-
-%{
-g = robotindependentmapping(kappa, phi, ell, 20);
-    
-% Extract the components of the vector from the last row of g
-vx = g(end, 9);
-vy = g(end, 10);
-vz = g(end, 11);
-
-% Calculate the magnitude of the vector
-v_mag = sqrt(vx^2 + vy^2 + vz^2);
-
-% Calculate the magnitude of the projection of the vector onto the x-y plane
-v_proj_mag = sqrt(vx^2 + vy^2);
-
-% Calculate the angle between the vector and the x-y plane
-angle_rad = acos(v_proj_mag / v_mag);
-
-% Convert the angle from radians to degrees
-angle_deg = rad2deg(angle_rad);
-
-end
-%}
