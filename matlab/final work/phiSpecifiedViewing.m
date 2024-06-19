@@ -41,17 +41,14 @@ for i = 1:n
 end
 
 disp('Check of Parameter Results (segment, l1, l2, l3, kappa, phi, ell):');
-disp(size(params)); % Verify Dimensions
-disp(params);
+disp(size(params)); % Verify Dimensions %disp(params);
 
-% Initialize a new matrix to store parameters with mapping indices
-params_with_mapping = [];
+%% Running Robot Mapping Function
 
-% Array to store all mapping results
-mapping_results = [];
-
-% Iterate over the params matrix and run each set of kappa, phi, and ell through robotindependentmapping
-for idx = 1:size(params, 1)
+params_with_mapping = []; % Initialize a new matrix to store parameters with mapping indices
+mapping_results = []; % Array to store all mapping results
+angles_degrees = []; % Initialize an array to store the angles
+for idx = 1:size(params, 1) % Iterate over 'params' and run each kappa, phi, and ell --> robotindependentmapping
     if params(idx, 1) == 1 % Only process if the segment is 1
         kappa = params(idx, 5);
         phi = params(idx, 6);
@@ -64,55 +61,127 @@ for idx = 1:size(params, 1)
         mapping_results = cat(3, mapping_results, mapping_result); % Build a 3D array. 
         % Append the parameters and the index to the new matrix
         params_with_mapping = [params_with_mapping; params(idx, :), idx];
+        % Extract the components of the vector from the last row of mapping_result
+        vx = mapping_result(end, 9);
+        vy = mapping_result(end, 10);
+        vz = mapping_result(end, 11);
+        
+        % Calculate the magnitude of the vector
+        v_mag = sqrt(vx^2 + vy^2 + vz^2);
+        
+        % Calculate the magnitude of the projection of the vector onto the x-y plane
+        v_proj_mag = sqrt(vx^2 + vy^2);
+        
+        % Check if the values are valid before computing the angle
+        if v_mag > 0 && v_proj_mag / v_mag <= 1 && v_proj_mag / v_mag >= -1
+            % Calculate the angle between the vector and the x-y plane
+            angle_rad = acos(v_proj_mag / v_mag);
+            
+            % Convert the angle from radians to degrees
+            angle_deg = rad2deg(angle_rad);
+            
+            % Append the angle to the array
+            angles_degrees = [angles_degrees; angle_deg];
+            
+            % Append the angle to the params_with_mapping matrix
+            params_with_mapping(end, 9) = angle_deg;
+        else
+            % If the values are not valid, append NaN
+            angles_degrees = [angles_degrees; NaN];
+            params_with_mapping(end, 9) = NaN;
+        end
     end
 end
-%disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index):');
-%disp('Size of new Params matrix: ',params_with_mapping);
-%disp('Size of mapping results: ',size(mapping_results));
+    %disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index):');
+    %disp(params_with_mapping);
 
 %% Plotting
-figure;
-hold on;
-all_points = []; % Initialize variables for dynamic scaling
+
+% Prompt the user if they want to plot the results
+plot_choice = input('Would you like to plot the results? (y/n): ', 's');
+
+if strcmpi(plot_choice, 'y')
+    % Plotting
+    figure;
+    fig=figure;
+    fig.Color = [1 1 1];
+    hold on;
+    all_points = []; % Initialize variables for dynamic scaling
+    for idx = 1:size(mapping_results, 3)
+        g = mapping_results(:, :, idx);
+        vx = g(end, 9); % Extract the components of the vector
+        vy = g(end, 10);
+        vz = g(end, 11);
+        x = g(end, 13); % Extract the origin of the vector
+        y = g(end, 14);
+        z = g(end, 15);
+        all_points = [all_points; x, y, z, vx, vy, vz];
+    end
+    scale_factor = 0.1 * max(max(all_points(:, 1:3)) - min(all_points(:, 1:3))); % Dynamic scale factor
+    for i = 1:size(all_points, 1)
+        quiver3(all_points(i, 1), all_points(i, 2), all_points(i, 3), ...
+                all_points(i, 4), all_points(i, 5), all_points(i, 6), ...
+                scale_factor, 'LineWidth', 3, 'Color', [0 0 1]);
+    end
+
+    hold off;
+    xlabel('X');
+    ylabel('Y');
+    zlabel('Z');
+    title('3D Vector Plot');
+    grid on;
+end
+
+%% Histogram
+% Prompt the user if they want to plot the results
+plot_choice2 = input('Would you like a histogram of the results? (y/n): ', 's');
+
+if strcmpi(plot_choice2, 'y')
+    % Display the updated params_with_mapping matrix
+    disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index, angle_degrees):');
+    disp(params_with_mapping);
+    
+    % Plot the histogram of angles
+    figure;
+    histogram(angles_degrees, 'BinWidth', 5); % Adjust 'BinWidth' as needed
+    xlabel('Angle (degrees)');
+    ylabel('Frequency');
+    title('Histogram of Angles');
+    grid on;
+end
+
+end
+
+%% Angle Calculations 1
+%{
+angles_degrees = []; % Calculate the angle for each mapping result and append to params_with_mapping
 for idx = 1:size(mapping_results, 3)
     g = mapping_results(:, :, idx);
     vx = g(end, 9); % Extract the components of the vector
     vy = g(end, 10);
     vz = g(end, 11);
-    x = g(end, 13); % Extract the origin of the vector
-    y = g(end, 14);
-    z = g(end, 15);
-    all_points = [all_points; x, y, z, vx, vy, vz];
+    v_mag = sqrt(vx^2 + vy^2 + vz^2); % Calculate the magnitude of the vector
+    v_proj_mag = sqrt(vx^2 + vy^2); % Calculate the magnitude of the projection of the vector onto the x-y plane 
+    angle_rad = acos(v_proj_mag / v_mag); % Calculate the angle between the vector and the x-y plane
+    angle_deg = rad2deg(angle_rad); % Convert the angle from radians to degrees
+    angles_degrees = [angles_degrees; angle_deg];
 end
-scale_factor = 0.1 * max(max(all_points(:, 1:3)) - min(all_points(:, 1:3))); % Dynamic scale factor
-for i = 1:size(all_points, 1)
-    quiver3(all_points(i, 1), all_points(i, 2), all_points(i, 3), ...
-            all_points(i, 4), all_points(i, 5), all_points(i, 6), ...
-            scale_factor, 'LineWidth', 3, 'Color', [0 0 1]);
-end
+params_with_angles = [params_with_mapping, angles_degrees]; % Append the angles to the params_with_mapping matrix
+disp('Updated Parameter Results (segment, l1, l2, l3, kappa, phi, ell, mapping_index, angle_degrees):');
+% disp(params_with_angles); % Display the updated params with angles
 
-hold off;
-xlabel('X');
-ylabel('Y');
-zlabel('Z');
-title('3D Vector Plot');
+% Create histogram of angles
+figure;
+histogram(angles_degrees, 'BinWidth', 5); % Adjust 'BinWidth' as needed
+xlabel('Angle (degrees)');
+ylabel('Frequency');
+title('Histogram of Angles');
 grid on;
-
-end
-
+%}
 
 
 %% EXTRA NOTES
 %{
-% Extract the components of the vector from the last row of g
-vx = g(end, 9);
-vy = g(end, 10);
-vz = g(end, 11);
-
-% Extract the origin of the vector from the last row of g
-x = g(end, 9);
-y = g(end, 10);
-z = g(end, 11);
 
 % Calculate the magnitude of the vector
 v_mag = sqrt(vx^2 + vy^2 + vz^2);
