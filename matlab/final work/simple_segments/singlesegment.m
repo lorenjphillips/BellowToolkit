@@ -1,8 +1,8 @@
 function singlesegment(max_theta)
     % Constants - EVENTUALLY INPUT ANGLE AND ELL
-    ell = 1;
+    ell = 1.05;
     phi = 0;
-    numSteps = 91;
+    numSteps = max_theta + 1;
     kappa_max = ((max_theta * pi) / (180 * ell)); % Check
     kappa_values = linspace(0, kappa_max, numSteps);
     disp(kappa_values);
@@ -16,7 +16,8 @@ function singlesegment(max_theta)
         kappa = kappa_values(i);
         
         % Call the function and get the result
-        result = robotindependentmapping(kappa, phi, ell, 20);
+        n_seg=21;
+        result = robotindependentmapping(kappa, phi, ell, n_seg);
         
         % Append result to 3D array
         if isempty(output_3D_array)
@@ -40,7 +41,12 @@ function singlesegment(max_theta)
     disp(output_2D_matrix);
 
 %% Plotting vectors
-    figure;
+   % Constants for backbone plot
+col = lines(numSteps); % Color array for the segments, using lines colormap
+seg_end = n_seg; % Number of points in each segment, as per your input to robotindependentmapping
+
+
+figure;
     fig = figure;
     fig.Color = [1 1 1];
     hold on;
@@ -57,15 +63,24 @@ function singlesegment(max_theta)
         
         quiver(x, z, vx, vz, 'AutoScale', 'on', 'AutoScaleFactor', 0.05, 'MaxHeadSize', 0.01);
         % quiver3(x, y, z, vx, vy, vz, 'AutoScale', 'on', 'AutoScaleFactor', 0.05, 'MaxHeadSize', 0.01);
+        % Plot the backbone
+        plot(g(1:seg_end, 13), g(1:seg_end, 15), 'LineWidth', 2, 'Color', col(idx, :)); % Project to XZ plane
+
+            % If there are multiple segments, you can use a similar loop -
+            % will need to add numseg abovve (initilize and answer)
+    % for i = 2:numseg
+    %     plot(g(seg_end(i-1):seg_end(i), 13), g(seg_end(i-1):seg_end(i), 15), ...
+    %          'LineWidth', 2, 'Color', col(idx, :));
+    % end
 end
     
     % Set plot labels and title
-    xlabel('X');
+    xlabel('X (arbitrary unit)');
     ylabel('Z (arbitrary unit)');
     zlabel('Z');
     title('3D Vectors from output\_3D\_array');
-    xlim([0, 1]); % Adjust these limits based on your data
-    ylim([0, 1]); % Adjust these limits based on your data
+    xlim([0, 1.1]); % Adjust these limits based on your data
+    ylim([0, 1.1]); % Adjust these limits based on your data
 
     grid on;
     hold off;
