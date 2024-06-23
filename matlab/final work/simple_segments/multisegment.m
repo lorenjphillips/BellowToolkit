@@ -2,69 +2,72 @@ function multisegment(max_theta)
     % Constants
     ell = 1.05;
     phi = 0;
-    numSteps = max_theta + 1; % Number of steps for kappa
-    kappa_max = ((max_theta * pi) / (180 * ell)); % Maximum kappa value
-    kappa_values = linspace(0, kappa_max, numSteps); % Array of kappa values
-
-    % Placeholder for ell1 and ell2 values
+    numSteps = max_theta + 1; % Number of steps for theta values
+    theta_values = linspace(0, max_theta, numSteps); % Array of theta values
     ell_steps = 21; % Number of steps for ell1 and ell2 combinations (0:5:100 gives 21 steps)
     ell1_values = linspace(0, ell, ell_steps);
     ell2_values = ell - ell1_values;
 
     % Calculate total number of iterations for the 3D array
-    totalIterations = numSteps * ell_steps;
+    totalIterations = numSteps * numSteps * ell_steps;
+
+    % Display the total number of iterations and ask user if they wish to proceed
+    fprintf('Total number of iterations: %d\n', totalIterations);
+    proceed = input('Do you wish to proceed? (yes/no): ', 's');
+    
+    if strcmpi(proceed, 'no')
+        disp('Operation cancelled by user.');
+        return;
+    end
 
     % Placeholder for output matrices
     output_3D_array = [];
-    output_2D_matrix = zeros(totalIterations, 5); % Columns: index, ell1, ell2, kappa, theta
+    output_2D_matrix = zeros(totalIterations, 6); % Columns: index, ell1, ell2, kappa1, kappa2, theta
 
     index = 1; % Initialize index for storing results
 
-    % Display ell1 and ell2 values
-    disp(table(ell1_values', ell2_values', 'VariableNames', {'Arc 1 Length', 'Arc 2 Length'}));
-
-        % Loop through ell1 and ell2 values
+    % Loop through ell1 and ell2 values
     for j = 1:ell_steps
         ell1 = ell1_values(j);
         ell2 = ell2_values(j);
 
-        % Loop through kappa values
-        for i = 1:numSteps
-            kappa = kappa_values(i);
+        % Loop through theta1 and theta2 values
+        for t1 = 1:numSteps
+            theta1 = theta_values(t1);
+            kappa1 = (theta1 * pi) / (180 * ell1); % Calculate kappa1 for theta1
 
-            % Call the function and get the result
-            n_seg = 21; % Total number of points
-            result = robotindependentmapping(kappa, phi, ell1 + ell2, n_seg);
+            for t2 = 1:numSteps
+                theta2 = theta_values(t2);
+                kappa2 = (theta2 * pi) / (180 * ell2); % Calculate kappa2 for theta2
 
-            % Append result to 3D array
-            if isempty(output_3D_array)
-                [n, m] = size(result);
-                output_3D_array = zeros(n, m, totalIterations);
+                % Call the function and get the result
+                n_seg = 21; % Total number of points
+                result = robotindependentmapping([kappa1 kappa2], [phi phi], [ell1 ell2], n_seg);
+
+                % Append result to 3D array
+                if isempty(output_3D_array)
+                    [n, m] = size(result);
+                    output_3D_array = zeros(n, m, totalIterations);
+                end
+                output_3D_array(:, :, index) = result;
+
+                % Store the index, ell1, ell2, kappa1, kappa2, and theta
+                output_2D_matrix(index, :) = [index, ell1, ell2, kappa1, kappa2, theta1 + theta2];
+
+                % Increment index
+                index = index + 1;
             end
-            output_3D_array(:, :, index) = result;
-
-            % Calculate viewing angle theta
-            theta = (180 * kappa * (ell1 + ell2)) / pi;
-
-            % Store the index, ell1, ell2, kappa value, and theta value
-            output_2D_matrix(index, :) = [index, ell1, ell2, kappa, theta];
-
-            % Increment index
-            index = index + 1;
         end
     end
 
     % Save or display the results as needed
     disp('Size of 3D Array of Results:');
-    % disp(output_3D_array);
+    disp(size(output_3D_array));
 
     disp('2D Matrix of Indices, Ell1, Ell2, Kappa, Theta (Deg):');
     disp(size(output_2D_matrix));
-end
 
 %% Plotting
-%{
-%% Plotting vectors
     % Constants for backbone plot
     col = lines(totalIterations); % Color array for the segments, using lines colormap
     seg_end = n_seg; % Number of points in each segment, as per your input to robotindependentmapping
@@ -97,7 +100,7 @@ end
     grid on;
     hold off;
     end
-    %}
+   
 %% Deprecated
 %{
     phi = 0;
