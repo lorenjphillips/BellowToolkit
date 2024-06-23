@@ -1,11 +1,19 @@
-function singlesegment(max_theta)
+function multisegment(max_theta)
     % Constants - EVENTUALLY INPUT ANGLE AND ELL
+        % Next Steps
+            %1. Two input maxxes
+            %2. Ell math, iterate through number of possibilities of ratio
+            %3. Execute these stacked 3x parameters in g, output with all
+            %kappa ratios stored for both
+            %4. Add distance from origin plane
+
+     
     ell = 1.05;
     phi = 0;
     numSteps = max_theta + 1;
-    kappa_max = ((max_theta * pi) / (180 * ell)); % Check
+    kappa_max = ((max_theta * pi) / (180 * ell)); 
     kappa_values = linspace(0, kappa_max, numSteps);
-    disp(kappa_values);
+    % disp(kappa_values);
     
     % Placeholder for output matrices
     output_3D_array = [];
@@ -53,10 +61,10 @@ figure;
     for idx = 1:size(output_3D_array, 3)
         g = output_3D_array(:, :, idx);
         vx = g(end, 9); % Extract the components of the vector
-        % vy = g(end, 10);
+        vy = g(end, 10);
         vz = g(end, 11);
         x = g(end, 13); % Extract the origin of the vector
-        % y = g(end, 14);
+        y = g(end, 14);
         z = g(end, 15);
         
         % Plot the vector using quiver3
