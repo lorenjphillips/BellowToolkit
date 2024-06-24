@@ -66,7 +66,7 @@ figure;
         % Plot the backbone
         plot(g(1:seg_end, 13), g(1:seg_end, 15), 'LineWidth', 2, 'Color', col(idx, :)); % Project to XZ plane
 
-            % If there are multiple segments, you can use a similar loop -
+            %  Formultiple segments,  use a similar loop -
             % will need to add numseg abovve (initilize and answer)
     % for i = 2:numseg
     %     plot(g(seg_end(i-1):seg_end(i), 13), g(seg_end(i-1):seg_end(i), 15), ...
@@ -78,9 +78,9 @@ end
     xlabel('X (arbitrary unit)');
     ylabel('Z (arbitrary unit)');
     zlabel('Z');
-    title('3D Vectors from output\_3D\_array');
-    xlim([0, 1.1]); % Adjust these limits based on your data
-    ylim([0, 1.1]); % Adjust these limits based on your data
+    title('Curve Backbones and Directions');
+    xlim([0, 1.1]); 
+    ylim([0, 1.1]); 
 
     grid on;
     hold off;

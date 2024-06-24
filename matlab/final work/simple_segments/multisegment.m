@@ -13,7 +13,7 @@ function multisegment(max_theta)
     disp('ell1 and ell2 values:');
     disp(table(ell1_values', ell2_values', 'VariableNames', {'Seg 1 Lengths', 'Seg 2 Lengths'}));
     
-    % Display the total number of iterations and ask user if they wish to proceed
+    % Display the total number of iterations and ask to proceed
     chr = 'The script will use every pair of lengths';
     chr = [chr newline 'defined above, and iterate through a defined minimum'];
     chr = [chr newline 'and maximum curvature for both segments, calculating '];
@@ -69,7 +69,14 @@ function multisegment(max_theta)
 
     disp('2D Matrix of Indices, Ell1, Ell2, Kappa1, Kappa2, Theta 1 (Deg), Theta 2 (Deg):');
     disp(output_2D_matrix);
+    
+        dims = size(output_3D_array); % Get the dimensions of the array
+        dims_str = sprintf('%d x %d x %d', dims); % Format the dimensions into a string
+        fprintf(2, 'Success. All mappings stored in 3D array of size: %s\n', dims_str); % Print the formatted string
 
+    disp('To select only specific results ')
+    disp('for a ratio of segment 1:segment 2: ')
+    
     selected_ratio = input('Enter the desired ell ratio as a percentage (e.g., 5 for 5:95): '); % Prompt the user for the ell ratio
     
     if selected_ratio < 0 || selected_ratio > 100  % Validate input
@@ -119,3 +126,27 @@ end
     hold off;
 end
     %}
+
+    %% Tables and Histograms
+%{
+    % Extract final theta values and x components for the selected curves
+    final_thetas = output_2D_matrix(selected_indices, 6);
+    final_x_components = output_3D_array(end, 13, selected_indices);
+
+    % Plot histogram for final theta values
+    figure;
+    histogram(final_thetas, 'BinWidth', 5); % Can adjust bin width!
+    xlabel('Final Theta (degrees)');
+    ylabel('Frequency');
+    title(['Histogram of Final Theta Values for ell1:ell2 = ' num2str(selected_ratio) ':' num2str(100 - selected_ratio)]);
+    
+   
+    figure;  % Plot histogram for x components
+    histogram(final_x_components, 'BinWidth', 0.05); % Can adjust bin
+    width!
+    xlabel('X Component (arbitrary unit)');
+    ylabel('Frequency');
+    title(['Histogram of X Components for ell1:ell2 = ' num2str(selected_ratio) ':' num2str(100 - selected_ratio)]);
+
+end
+%}
