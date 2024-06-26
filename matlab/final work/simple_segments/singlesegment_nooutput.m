@@ -1,10 +1,10 @@
-function ss = singlesegment(max_theta,ell)
+function ss = singlesegment_nooutput(max_theta,ell)
     
     phi = 0; % Constants - eventually to become inputs
     numSteps = max_theta + 1;
     kappa_max = ((max_theta * pi) / (180 * ell)); % Check
     kappa_values = linspace(0, kappa_max, numSteps);
-    disp('Check of Kappa: '); disp(kappa_values);
+    % disp('Check of Kappa: '); disp(kappa_values);
     output_3D_array = []; % Init output matrices
     output_2D_matrix = zeros(numSteps, 5); % Init output matrices
     
@@ -35,11 +35,12 @@ function ss = singlesegment(max_theta,ell)
     % disp('3D Array of Results:'); % Display the results as needed
     % disp(output_3D_array);
     % disp('2D Matrix of Indices, Kappa Values, Theta Input (Deg), Theta Output wrt x-axis:');
-     disp(output_2D_matrix);
+    % disp(output_2D_matrix);
 
      ss = output_2D_matrix(:, [4, 5]);
 
 %% Plotting vectors
+%{
 col = lines(numSteps); % Color array for the segments, using lines colormap
 seg_end = n_seg; % Number of points in each segment, as per your input to robotindependentmapping
 
@@ -68,4 +69,5 @@ end
 
     grid on;
     hold off;
+%}
 end
