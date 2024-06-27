@@ -1,4 +1,4 @@
-function ms = multisegment(max_theta)
+function mst = multisegmenttest(max_theta)
     
     ell = 1.00; % Define total length of both segments
     phi = 0; % Orientation set to 0 for 2D curves
@@ -12,15 +12,7 @@ function ms = multisegment(max_theta)
     % Display arc lengths
     disp('ell1 and ell2 values:');
     disp(table(ell1_values', ell2_values', 'VariableNames', {'Seg 1 Lengths', 'Seg 2 Lengths'}));
-    
-    % Display the total number of iterations and ask to proceed
-    chr = 'The script will use every pair of lengths';
-    chr = [chr newline 'defined above, and iterate through a defined minimum'];
-    chr = [chr newline 'and maximum curvature for both segments, calculating '];
-    chr = [chr newline 'results for every combination of length ratio,'];
-    chr = [chr newline 'theta (curvatures), and store it in a 3D array. '];
-    % chr = [chr newline ''];
-    disp(chr)
+        
     fprintf(2,'Total number of iterations: %d\n', totalIterations);
     proceed = input('Do you wish to proceed? (yes/no): ', 's');
     
@@ -28,7 +20,6 @@ function ms = multisegment(max_theta)
         disp('Operation cancelled by user.');
         return;
     end
-
     output_3D_array = []; % Placeholder for output matrices
     output_2D_matrix = zeros(totalIterations, 7); % Columns: index, ell1, ell2, kappa1, kappa2, theta1, theta2
 
@@ -64,39 +55,39 @@ function ms = multisegment(max_theta)
         end
     end
 
-    % disp('3D Array of Results:');
-    % disp(output_3D_array); % Save or display the results as needed
-
-    disp('2D Matrix of Indices, Ell1, Ell2, Kappa1, Kappa2, Theta 1 (Deg), Theta 2 (Deg):');
-    disp(output_2D_matrix);
+    % Prompt the user for the ell ratio
+    selected_ratio = input('Enter the desired ell ratio as a percentage (e.g., 5 for 5:95): ');
     
-        dims = size(output_3D_array); % Get the dimensions of the array
-        dims_str = sprintf('%d x %d x %d', dims); % Format the dimensions into a string
-        fprintf(2, 'Success. All mappings stored in 3D array of size: %s\n', dims_str); % Print the formatted string
-
-    disp('To select only specific results ')
-    disp('for a ratio of segment 1:segment 2: ')
-    
-    selected_ratio = input('Enter the desired ell ratio as a percentage (e.g., 5 for 5:95): '); % Prompt the user for the ell ratio
-    
-    if selected_ratio < 0 || selected_ratio > 100  % Validate input
+    % Validate input
+    if selected_ratio < 0 || selected_ratio > 100
         error('Invalid ratio. Please enter a value between 0 and 100.');
     end
 
-    % ADD VALIDATION FOR 5 STEP
-
-    ell1_selected = (selected_ratio / 100) * ell; % Calculate the corresponding ell1 and ell2 values
+    % Calculate the corresponding ell1 and ell2 values
+    ell1_selected = (selected_ratio / 100) * ell;
     ell2_selected = ell - ell1_selected;
 
     % Find the indices corresponding to the selected ratio
-    selected_indices = find(output_2D_matrix(:, 2) == ell1_selected & output_2D_matrix(:, 3) == ell2_selected)
+    selected_indices = find(output_2D_matrix(:, 2) == ell1_selected & output_2D_matrix(:, 3) == ell2_selected);
+    
+    % Create the (nx2) matrix
+    selected_matrix = zeros(length(selected_indices), 2);
+    for idx = 1:length(selected_indices)
+        index = selected_indices(idx);
+        g = output_3D_array(:, :, index);
+        total_theta = output_2D_matrix(index, 6) + output_2D_matrix(index, 7);
+        x = g(end-1, 13);
+        selected_matrix(idx, :) = [total_theta, x];
+    end
 
-    ms = 1;
-end
-    %%  Plotting
-    %{
+    % Display the selected matrix
+    disp('Selected Matrix (Total Theta, X Component):');
+    disp(selected_matrix);
+
+    %% Plotting
     % Constants for backbone plot
     col = lines(length(selected_indices)); % Color array for the segments, using lines colormap
+    seg_end = n_seg; % Number of points in each segment, as per your input to robotindependentmapping
 
     figure;
     fig = figure;
@@ -104,51 +95,42 @@ end
     hold on;
     for idx = 1:length(selected_indices)
         index = selected_indices(idx);
-        g = output_3D_array(:, :, index)
-        vx = g(end, 9) % Extract the components of the vector
-        vz = g(end, 11)
-        x = g(end, 13) % Extract the origin of the vector
-        z = g(end, 15)
+        g = output_3D_array(:, :, index);
+        vx = g(end, 9); % Extract the components of the vector
+        vz = g(end, 11);
+        x = g(end, 13); % Extract the origin of the vector
+        z = g(end, 15);
         
         % Plot the vector using quiver
         quiver(x, z, vx, vz, 'AutoScale', 'on', 'AutoScaleFactor', 0.05, 'MaxHeadSize', 0.01);
         
         % Plot the backbone
-        plot(g(1:n_seg, 13), g(1:n_seg, 15), 'LineWidth', 2, 'Color', col(idx, :)); % Project to XZ plane
+        plot(g(1:seg_end, 13), g(1:seg_end, 15), 'LineWidth', 2, 'Color', col(idx, :)); % Project to XZ plane
     end
 
     % Set plot labels and title
     xlabel('X (arbitrary unit)');
     ylabel('Z (arbitrary unit)');
     title(['2D Vectors and Backbones on the XZ Plane for ell1:ell2 = ' num2str(selected_ratio) ':' num2str(100 - selected_ratio)]);
-    xlim([-0.1, 1.1]); % Adjust these limits based on your data
-    ylim([-0.1, 1.1]); % Adjust these limits based on your data
+    xlim([0, 1.1]); % Adjust these limits based on your data
+    ylim([0, 1.1]); % Adjust these limits based on your data
 
     grid on;
     hold off;
-end
-    %}
-
-    %% Tables and Histograms
-%{
-    % Extract final theta values and x components for the selected curves
-    final_thetas = output_2D_matrix(selected_indices, 6);
-    final_x_components = output_3D_array(end, 13, selected_indices);
 
     % Plot histogram for final theta values
     figure;
-    histogram(final_thetas, 'BinWidth', 5); % Can adjust bin width!
-    xlabel('Final Theta (degrees)');
+    histogram(selected_matrix(:, 1), 'BinWidth', 5); % Adjust BinWidth as needed
+    xlabel('Total Theta (degrees)');
     ylabel('Frequency');
-    title(['Histogram of Final Theta Values for ell1:ell2 = ' num2str(selected_ratio) ':' num2str(100 - selected_ratio)]);
+    title(['Histogram of Total Theta Values for ell1:ell2 = ' num2str(selected_ratio) ':' num2str(100 - selected_ratio)]);
     
-   
-    figure;  % Plot histogram for x components
-    histogram(final_x_components, 'BinWidth', 0.05); % Can adjust bin
-    width!
+    % Plot histogram for x components
+    figure;
+    histogram(selected_matrix(:, 2), 'BinWidth', 0.05); % Adjust BinWidth as needed
     xlabel('X Component (arbitrary unit)');
     ylabel('Frequency');
     title(['Histogram of X Components for ell1:ell2 = ' num2str(selected_ratio) ':' num2str(100 - selected_ratio)]);
 
+    mst = selected_matrix; % Return the selected matrix as the function output
 end
-%}
