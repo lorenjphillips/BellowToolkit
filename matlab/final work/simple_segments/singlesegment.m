@@ -41,7 +41,7 @@ function ss = singlesegment(max_theta,ell)
 
 %% Plotting vectors
 col = lines(numSteps); % Color array for the segments, using lines colormap
-seg_end = n_seg; % Number of points in each segment, as per your input to robotindependentmapping
+seg_end = n_seg+1; % Number of points in each segment, as per your input to robotindependentmapping
 
 figure;
     fig = figure; fig.Color = [1 1 1]; hold on;

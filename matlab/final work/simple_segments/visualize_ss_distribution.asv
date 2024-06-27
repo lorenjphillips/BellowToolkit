@@ -35,16 +35,15 @@ function visualize_ss_distribution(ss_outputs, angle_bin_size)
     end
     colorbar;
     ylabel('Angle Bins (degrees)');
-    %xlabel('Count');
+    % xlabel('Count');
     zlabel('Number of Occurrences');
-    %set(gca, 'XTick', 1:length(angle_bins)-1, 'XTickLabel', angle_bins(1:end-1));
-    set(gca, 'YTick', 1:length(angle_bins)-1, 'YTickLabel', angle_bins(1:end-1));
+    set(gca, 'XTick', 1:length(angle_bins)-1, 'XTickLabel', angle_bins(1:end-1));
     title('Distribution of Angles and Distances');
     
     % Adjust color scale to max occurrences
     max_occurrences = max(bin_counts);
     clim([0 max_occurrences]);
-%%{
+
     % Prepare data for the table
     table_data = cell(length(angle_bins)-1, 2);
     for i = 1:length(angle_bins)-1
@@ -57,17 +56,10 @@ function visualize_ss_distribution(ss_outputs, angle_bin_size)
         end
     end
 
-    % Prepare table content
-    table_content = {'Distance Range', 'Angle (degrees)'};
-    for i = 1:length(angle_bins)-1
-        table_content{end+1} = table_data{i, 1};
-        table_content{end+1} = table_data{i, 2};
-    end
-
     % Create table annotation
-    annotation('textbox', [0.65, 0.2, 0.3, 0.6], 'String', ...
-        sprintf('%-20s %-20s\n%-20s %-20s\n', table_content{:}), ...
+    annotation('textbox', [0.7, 0.5, 0.25, 0.4], 'String', ...
+        {'Distance Range', 'Angle (degrees)', table_data{:,:}}, ...
         'EdgeColor', 'none', 'FontSize', 10, 'FontWeight', 'bold', ...
-        'BackgroundColor', 'w', 'FitBoxToText', 'on'); 
-%}
+        'BackgroundColor', 'w', 'FitBoxToText', 'off');
+
 end
