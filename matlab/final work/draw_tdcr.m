@@ -158,8 +158,8 @@ function [fig] = draw_tdcr(g,seg_end,r_disk,r_height,options)
 
     %% Coordinate Frames
     if options.tipframe && ~options.segframe
-       % quiver3(g(end,13),g(end,14),g(end,15),g(end,1),g(end,2),g(end,3),0.01,'LineWidth',3,'Color',[1 0 0]);
-       % quiver3(g(end,13),g(end,14),g(end,15),g(end,5),g(end,6),g(end,7),0.01,'LineWidth',3,'Color',[0 1 0])
+       quiver3(g(end,13),g(end,14),g(end,15),g(end,1),g(end,2),g(end,3),0.01,'LineWidth',3,'Color',[1 0 0]);
+       quiver3(g(end,13),g(end,14),g(end,15),g(end,5),g(end,6),g(end,7),0.01,'LineWidth',3,'Color',[0 1 0])
         quiver3(g(end,13),g(end,14),g(end,15),g(end,9),g(end,10),g(end,11),0.01,'LineWidth',3,'Color',[0 0 1]);
     end  
     

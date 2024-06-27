@@ -15,7 +15,7 @@ function ss_outputs = iterate_singlesegment(max_theta,min_ell,max_ell,step_ell)
     % Loop through ell values and calculate the ss matrix for each
     for i = 1:numEll
         ell = ell_values(i);
-        ss = singlesegment_nooutput(max_theta, ell);
+        ss = singlesegment(max_theta, ell);
         ss_outputs(:, :, i) = ss;
     end
     
