@@ -30,8 +30,6 @@ function g = robotindependentmapping(kappa, phi, ell, ptsperseg)
         ptsperseg (1,:) uint8 %number of points per segment
     end
 
-    %% Break 1
-
     if length(kappa) ~= length(phi) || length(kappa) ~= length(ell)
         error("Dimension mismatch.")
     end
@@ -43,37 +41,35 @@ function g = robotindependentmapping(kappa, phi, ell, ptsperseg)
     % Ensure ptsperseg is double for calculations
     ptsperseg = double(ptsperseg);
 
-    g = zeros(sum(ptsperseg+1),16);
+    g = zeros(sum(ptsperseg),16);
     T_base = eye(4);
     for i=1:numseg
-        T = zeros(ptsperseg(i),16); % Could be this
-        c_p=cos(phi(i));
-        s_p=sin(phi(i));
+        T = zeros(ptsperseg(i),16);
+        c_p = cos(phi(i));
+        s_p = sin(phi(i));
 
-        for j=1:ptsperseg(i)+1
-            c_ks=cos(kappa(i)*(j-1)*(ell(i)/ptsperseg(i)));
-            s_ks=sin(kappa(i)*(j-1)*(ell(i)/ptsperseg(i)));
-            if kappa(i)~=0
-                    T_temp = [c_p*c_p*(c_ks-1)+1 s_p*c_p*(c_ks-1) -c_p*s_ks 0 ...
-                    s_p*c_p*(c_ks-1) c_p*c_p*(1-c_ks)+c_ks -s_p*s_ks 0 ...
-                    c_p*s_ks s_p*s_ks c_ks 0 ...
-                    (c_p*(1-c_ks))/kappa(i) (s_p*(1-c_ks))/kappa(i) s_ks/kappa(i) 1];
-
-            else %kappa=0 ->otherwise division by zero
-                    T_temp =[c_p*c_p*(c_ks-1)+1 s_p*c_p*(c_ks-1) -c_p*s_ks 0 ...
-                    s_p*c_p*(c_ks-1) c_p*c_p*(1-c_ks)+c_ks -s_p*s_ks 0 ...
-                    c_p*s_ks s_p*s_ks c_ks 0 ...
-                    0 0 (j-1)*(ell(i)/(ptsperseg(i))) 1];
+        for j=0:(ptsperseg(i)-1)
+            c_ks = cos(kappa(i)*j*(ell(i)/(ptsperseg(i)-1)));
+            s_ks = sin(kappa(i)*j*(ell(i)/(ptsperseg(i)-1)));
+            if kappa(i) ~= 0
+                T_temp = [c_p*c_p*(c_ks-1)+1 s_p*c_p*(c_ks-1) -c_p*s_ks 0 ...
+                          s_p*c_p*(c_ks-1) c_p*c_p*(1-c_ks)+c_ks -s_p*s_ks 0 ...
+                          c_p*s_ks s_p*s_ks c_ks 0 ...
+                          (c_p*(1-c_ks))/kappa(i) (s_p*(1-c_ks))/kappa(i) s_ks/kappa(i) 1];
+            else % kappa=0 -> otherwise division by zero
+                T_temp = [c_p*c_p*(c_ks-1)+1 s_p*c_p*(c_ks-1) -c_p*s_ks 0 ...
+                          s_p*c_p*(c_ks-1) c_p*c_p*(1-c_ks)+c_ks -s_p*s_ks 0 ...
+                          c_p*s_ks s_p*s_ks c_ks 0 ...
+                          0 0 j*(ell(i)/(ptsperseg(i)-1)) 1];
             end
-            T(j,:)=reshape(T_base*reshape(T_temp,4,4),1,16);
+            T(j+1,:) = reshape(T_base*reshape(T_temp,4,4),1,16);
         end
-        if i==1
-            g(1:ptsperseg(i)+1,:) = T;
+        if i == 1
+            g(1:ptsperseg(i),:) = T;
         else
-            g(sum(ptsperseg(1:i-1))+1:sum(ptsperseg(1:i-1))+ptsperseg(i)+1,:) = T;
+            g(sum(ptsperseg(1:i-1))+1:sum(ptsperseg(1:i)),:) = T;
         end
 
         T_base = reshape(T(ptsperseg(i),:),4,4);
     end
-
 end

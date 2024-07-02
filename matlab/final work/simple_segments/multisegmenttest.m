@@ -88,7 +88,7 @@ function mst = multisegmenttest(max_theta)
     %% Plotting
     % Constants for backbone plot
     col = lines(length(selected_indices)); % Color array for the segments, using lines colormap
-    seg_end = (n_seg + 1)* 2; % Number of points in each segment, as per your input to robotindependentmapping
+    seg_end = (n_seg+1)* 2; % Number of points in each segment, as per your input to robotindependentmapping
 
     figure;
     fig = figure;
