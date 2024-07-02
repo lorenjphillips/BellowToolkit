@@ -1,27 +1,13 @@
 function g = robotindependentmapping(kappa, phi, ell, ptsperseg)
-% ROBOTINDEPENDENTMAPPING creates a framed curve for given configuration parameters
 %
-%   
 %       g = robotindependentmapping([1/40e-3;1/10e-3],[0,pi],[25e-3,20e-3],10)
 %       creates a 2-segment curve with radius of curvatures 1/40 and 1/10
 %       and segment lengths 25 and 20, where the second segment is rotated by pi rad.
 %       
         % g = robotindependentmapping([kappa],[phi],[ell],10)
-    
-%   INPUT: configuration parameters
-%       kappa (nx1): segment curvatures
-%       phi (nx1): segment bending plane angles
-%       l (nx1): segment lengths
-%       ptsperseg (nx1): number of points per segment
-%                        if n=1 all segments with equal number of points
+ 
 %   OUTPUT: backbone curve
 %       g (n,16): backbone curve with n 4x4 transformation matrices reshaped into 1x16 vector (columnwise)
-%
-%   Author: Jessica Burgner-Kahrs <jbk@cs.toronto.edu>
-%   Date: 2022/02/16
-%   Version: 0.2
-%
-%   Copyright: 2023 Continuum Robotics Laboratory, University of Toronto
 
     arguments
         kappa (1,:) double %segment curvatures
