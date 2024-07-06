@@ -1,4 +1,4 @@
-function mst = multisegmenttest(max_theta)
+function mst = multisegmentloop(max_theta,ell)
     
     ell = 1.00; % Define total length of both segments
     phi = 0; % Orientation set to 0 for 2D curves
