@@ -11,7 +11,6 @@ function ss = singlesegmentloop(max_theta,ell)
 
     fprintf(2,'Total number of iterations for single segment calculation: %d\n', numSteps);
     
-    
     % Loop through kappa values
     for i = 1:numSteps
         kappa = kappa_values(i);
@@ -42,7 +41,7 @@ function ss = singlesegmentloop(max_theta,ell)
     % disp('2D Matrix of Indices, Kappa Values, Theta Input (Deg), Theta Output wrt x-axis:');
     % disp(output_2D_matrix);
 
-     ss = output_2D_matrix(:, [3, 5]);
+    ss = output_2D_matrix(:, [3, 5]);
 
 % %% Plotting vectors
 % col = lines(numSteps); % Color array for the segments, using lines colormap
