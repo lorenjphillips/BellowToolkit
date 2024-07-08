@@ -4,7 +4,7 @@ function [ss, ms] = ssmslengthcomparison(max_theta, ell)
         error('max_theta must be an even number between 0 and 180.');
     end
 
-    ell_ratio = 50;
+    ell_ratio = 90;
     max_theta_ms = max_theta / 2;
     ss = singlesegmentloop(max_theta, ell);
     ms = multisegmentloop(max_theta_ms, ell, ell_ratio);
