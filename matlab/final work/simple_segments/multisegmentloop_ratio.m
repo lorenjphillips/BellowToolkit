@@ -1,4 +1,4 @@
-function ms = multisegmentloop_ratio(max_theta1, max_theta2, ell, ell_ratio)
+function ms = multisegmentloop_ratio(max_theta1, max_theta2, ell, ell_ratio, curve_ratio)
     
     if mod(max_theta1, 2) ~= 0 || max_theta1 < 0 || max_theta1 > 180
         error('max_theta1 must be an even number between 0 and 180.');
@@ -60,13 +60,25 @@ function ms = multisegmentloop_ratio(max_theta1, max_theta2, ell, ell_ratio)
     ell1_selected = (selected_ratio / 100) * ell;
     ell2_selected = ell - ell1_selected;
 
-    % Find the indices corresponding to the selected ratio
+    % Find the indices corresponding to the selected ell ratio
     selected_indices = find(output_2D_matrix(:, 2) == ell1_selected & output_2D_matrix(:, 3) == ell2_selected);
     
-    % Create the (nx2) matrix
-    selected_matrix = zeros(length(selected_indices), 2);
+    % Filter selected_indices by curve_ratio
+    filtered_indices = [];
     for idx = 1:length(selected_indices)
-        index = selected_indices(idx);
+    index = selected_indices(idx);
+    theta1 = output_2D_matrix(index, 6);
+    theta2 = output_2D_matrix(index, 7);
+    % Check if the ratio of theta1 to theta2 is within 5 degrees of the curve_ratio
+    if abs(theta1 - (curve_ratio / 100 * theta2)) <= 5
+        filtered_indices = [filtered_indices; index];
+    end
+end
+
+    % Create the (nx2) matrix
+    selected_matrix = zeros(length(filtered_indices), 2);
+    for idx = 1:length(filtered_indices)
+        index = filtered_indices(idx);
         g = output_3D_array(:, :, index);
         total_theta = output_2D_matrix(index, 6) + output_2D_matrix(index, 7);
         x = g(end-1, 13);
@@ -74,6 +86,7 @@ function ms = multisegmentloop_ratio(max_theta1, max_theta2, ell, ell_ratio)
     end
 
     ms = selected_matrix;
+
 
     %% Plotting
     % Constants for backbone plot
