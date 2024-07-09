@@ -1,9 +1,9 @@
-function ssms_multilength(max_theta, ell_min, ell_max, ell_steps)
+function ssms_multi_ratio_length(max_theta, ell_min, ell_max, ell_steps)
     if mod(max_theta, 2) ~= 0 || max_theta < 0 || max_theta > 180
         error('max_theta must be an even number between 0 and 180.');
     end
     
-    ell_ratio = 50;
+    ell_ratio = 25;
     max_theta_ms = max_theta / 2;
     
     % Generate the range of ell values
@@ -17,7 +17,7 @@ function ssms_multilength(max_theta, ell_min, ell_max, ell_steps)
     for i = 1:ell_steps
         ell = ell_values(i);
         ss = singlesegmentloop(max_theta, ell);
-        ms = multisegmentloop(max_theta_ms, ell, ell_ratio);
+        ms = multisegmentloop_ratio(max_theta_ms, ell, ell_ratio);
         
         % Save the results in the cell arrays
         ss_results{i} = ss;
@@ -46,8 +46,8 @@ function ssms_multilength(max_theta, ell_min, ell_max, ell_steps)
     end
     
     xlabel('Angle (degrees)');
-    ylabel('Distance (Unitless)');
-    title('Comparison of Distance at Each Angle for Single and Multi Segment');
+    ylabel('Distance');
+    title('Comparison of Distance at Each Angle for Single and Multi Segment Robots');
     legend show;
     grid on;
     
