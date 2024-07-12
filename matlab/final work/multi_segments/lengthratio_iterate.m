@@ -1,4 +1,4 @@
-function ssms_multi_ratio_length(ell_min, ell_max, ell_steps)
+function lengthratio_iterate(ell_min, ell_max, ell_steps)
     % if mod(max_theta, 2) ~= 0 || max_theta < 0 || max_theta > 180
     %     error('max_theta must be an even number between 0 and 180.');
     % end
