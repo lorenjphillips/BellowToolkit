@@ -89,6 +89,7 @@ end
 
 
     %% Plotting
+    %{
     % Constants for backbone plot
     col = lines(length(selected_indices)); % Color array for the segments, using lines colormap
     seg_end = (n_seg)*2; % Number of points in each segment, as per your input to robotindependentmapping
@@ -135,4 +136,5 @@ end
     xlabel('X Component (arbitrary unit)');
     ylabel('Frequency');
     title(['Histogram of X Components for ell1:ell2 = ' num2str(selected_ratio) ':' num2str(100 - selected_ratio)]);
+    %}
 end
