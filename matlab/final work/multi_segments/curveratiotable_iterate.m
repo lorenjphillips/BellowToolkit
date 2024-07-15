@@ -1,7 +1,7 @@
-function lengthratiotable_iterate(ell)
-    % Define ell_ratios to loop through
-    ell_ratios = [10, 30, 50, 70, 90];
-    curve_ratio = 100;
+function curveratiotable_iterate(ell)
+    % Define curve_ratios to loop through
+    curve_ratios = [25, 50, 100, 200, 400];
+    ell_ratio = 50;
     max_theta1 = 60;
     max_theta2 = 60;
     max_theta = max_theta1 + max_theta2;
@@ -12,8 +12,8 @@ function lengthratiotable_iterate(ell)
     % Initialize a table to store the results
     results_table = table;
     
-    for ell_ratio = ell_ratios
-        % Compute ms for the given ell value and ell_ratio
+    for curve_ratio = curve_ratios
+        % Compute ms for the given ell value and curve_ratio
         ms = multisegment_iterate(max_theta1, max_theta2, ell, ell_ratio, curve_ratio); % Plots suppressed
         
         % Extract the largest available theta value and the corresponding distances
@@ -39,12 +39,12 @@ function lengthratiotable_iterate(ell)
         end
         
         % Append the results to the table
-        new_row = [{ell_ratio, max_theta_value, max_distance}, num2cell(avg_ranges)];
+        new_row = [{curve_ratio, max_theta_value, max_distance}, num2cell(avg_ranges)];
         results_table = [results_table; new_row];
     end
     
     % Set the table column names
-    col_names = [{'Ell_Ratio', 'Max_Theta', 'Max_Distance'}, strcat('Avg_Range_', string(theta_ranges), '_', string(theta_ranges+3))];
+    col_names = [{'Curve_Ratio', 'Max_Theta', 'Max_Distance'}, strcat('Avg_Range_', string(theta_ranges), '_', string(theta_ranges+3))];
     results_table.Properties.VariableNames = col_names;
     
     % Display the table
@@ -64,22 +64,22 @@ function lengthratiotable_iterate(ell)
         figure; fig = figure; fig.Color = [1 1 1];
         hold on;
         
-        % Generate colors for different ell ratios
-        colors = lines(length(ell_ratios));
+        % Generate colors for different curve ratios
+        colors = lines(length(curve_ratios));
         
         % Plot ss results (only once)
         angles_ss = ss(:, 1);
         distances_ss = ss(:, 2);
         scatter(angles_ss, distances_ss, 36, 'k', 'o', 'DisplayName', ['SS - Total Length = ', num2str(ell)]);
         
-        for i = 1:length(ell_ratios)
-            ell_ratio = ell_ratios(i);
+        for i = 1:length(curve_ratios)
+            curve_ratio = curve_ratios(i);
             ms = multisegment_iterate(max_theta1, max_theta2, ell, ell_ratio, curve_ratio); % Plots suppressed
             
             % Plot ms results
             angles_ms = ms(:, 1);
             distances_ms = ms(:, 2);
-            scatter(angles_ms, distances_ms, 36, colors(i, :), 'x', 'DisplayName', ['MS Ratio ', num2str(ell_ratio), ':', num2str(100 - ell_ratio)]);
+            scatter(angles_ms, distances_ms, 36, colors(i, :), 'x', 'DisplayName', ['MS Curve Ratio ', num2str(curve_ratio)]);
         end
         
         xlabel('Angle (degrees)', 'FontSize', 16);
