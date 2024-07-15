@@ -71,7 +71,7 @@ function ms = multisegment_iterate(max_theta1, max_theta2, ell, ell_ratio, curve
     theta2 = output_2D_matrix(index, 7);
     % Check if the ratio of theta1 to theta2 is within 5 degrees of the curve_ratio
     if abs(theta1 - (curve_ratio / 100 * theta2)) <= 5
-        filtered_indices = [filtered_indices; index];
+       filtered_indices = [filtered_indices; index];
     end
 end
 

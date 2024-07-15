@@ -1,9 +1,9 @@
 function lengthratio_iterate(ell_min, ell_max, ell_steps)
     ell_ratio = 50;
-    max_theta1 = 50;
-    max_theta2 = 50;
+    max_theta1 = 60;
+    max_theta2 = 60;
     max_theta = max_theta1 + max_theta1 ;
-    curve_ratio = 400;
+    curve_ratio = 100;
     ell_values = linspace(ell_min, ell_max, ell_steps);
     
     ss_results = cell(1, ell_steps);
