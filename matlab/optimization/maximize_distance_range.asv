@@ -1,0 +1,71 @@
+function maximize_distance_range(S_max, K_max, Theta_target, n, L_min, L_max)
+    % Initial guesses for the curvatures and arc lengths
+    K0 = linspace(0.01, K_max, n)';  % Initial guess for curvatures, evenly spaced
+    S0 = linspace(0.01, S_max, n)';  % Initial guess for arc lengths, evenly spaced
+
+    % Define the objective function
+    objective = @(S) -distance_range_with_fixed_theta(S, K_max, Theta_target, n);  % Negative because we use fmincon for minimization
+
+    % Define constraints
+    A = [];
+    b = [];
+    Aeq = [];
+    beq = [];
+    lb = zeros(n, 1);  % Lower bounds for S
+    ub = ones(n, 1) * S_max;  % Upper bounds for S
+
+    % Nonlinear constraint to ensure the total length is within bounds
+    nonlcon = @(S) nonlinear_constraints(S, L_min, L_max);
+
+    % Perform optimization with relaxed tolerances
+    options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp', ...
+                           'StepTolerance', 1e-6, 'ConstraintTolerance', 1e-6);
+    x0 = S0;  % Initial guess for optimization variables
+    [S_opt, fval, exitflag, output] = fmincon(objective, x0, A, b, Aeq, beq, lb, ub, nonlcon, options);
+
+    % Find the optimized curvatures for max and min distances
+    [X_max, X_min, K_max_opt, K_min_opt] = distance_range_with_fixed_theta(S_opt, K_max, Theta_target, n);
+
+    % Display results
+    disp('Optimized Arc Lengths:');
+    disp(S_opt);
+    disp('Optimized Curvatures for Max Distance:');
+    disp(K_max_opt);
+    disp('Optimized Curvatures for Min Distance:');
+    disp(K_min_opt);
+    disp('Maximized Distance Range:');
+    disp(X_max - X_min);  % Maximized distance range
+    disp('Theta Target (Degrees):');
+    disp(rad2deg(Theta_target));  % Convert Theta target to degrees
+end
+
+function [X_max, X_min, K_max_opt, K_min_opt] = distance_range_with_fixed_theta(S, K_max, Theta_target, n)
+    % Find the curvatures that achieve the target Theta with given S
+    K_max_opt = Theta_target ./ S;
+    K_min_opt = zeros(n, 1);  % Minimum curvature is zero
+
+    % Calculate maximum and minimum distances
+    X_max = sum((1 - cos(K_max_opt .* S)) ./ K_max_opt);
+    X_min = 0;  % S_min is zero for minimum distance
+end
+
+function [c, ceq] = nonlinear_constraints(S, L_min, L_max)
+    % Inequality constraints for total length
+    total_length = sum(S);
+    c = [L_min - total_length; total_length - L_max];
+
+    % No equality constraints
+    ceq = [];
+end
+
+
+% Example parameters
+S_max = 10;       % Maximum arc length
+K_max = 0.1;      % Maximum curvature
+Theta_target = 1; % Target angle (radians)
+n = 5;            % Number of segments
+L_min = 5;        % Minimum total length
+L_max = 10;       % Maximum total length
+
+% Run the optimization
+maximize_distance_range(S_max, K_max, Theta_target, n, L_min, L_max);
