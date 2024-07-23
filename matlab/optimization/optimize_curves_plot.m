@@ -1,4 +1,4 @@
-function optimize_curves(n, Theta, S_min, S_max, kappa_min, kappa_max)
+function optimize_curves_plot(n, Theta, S_min, S_max, kappa_min, kappa_max)
     % Initial guess for segment lengths and curvatures
     S0 = linspace(S_min/n, S_max/n, n);
     kappa0 = linspace(kappa_min, kappa_max, n);
@@ -32,6 +32,19 @@ function optimize_curves(n, Theta, S_min, S_max, kappa_min, kappa_max)
     fprintf('Segment lengths for maximum total length: \n');
     disp(S_max_lengths);
     fprintf('Maximum range (X_max - X_min): %f\n', -fval);
+
+    % Compute g_min and g_max using robotindependentmapping function
+    phi = zeros(n, 1); % phi is 0 for all cases
+    ptsperseg = 20; % Number of points per segment
+
+    g_min = robotindependentmapping(kappa_opt, phi, S_min_lengths, ptsperseg);
+    g_max = robotindependentmapping(kappa_opt, phi, S_max_lengths, ptsperseg);
+
+    % Display results
+    fprintf('g_min: \n');
+    disp(g_min);
+    fprintf('g_max: \n');
+    disp(g_max);
 end
 
 function f = objective(x, n, S_min, S_max)
@@ -61,7 +74,7 @@ function [c, ceq] = constraints(x, n, Theta, S_min, S_max)
     % Nonlinear inequality constraints
     c = []; % None in this case
 end
-% 
+
 % % Example usage
 % n = 5;             % Number of segments
 % Theta = 1;         % Target viewing angle (radians)
@@ -70,4 +83,5 @@ end
 % kappa_min = 0.01;  % Minimum curvature
 % kappa_max = 0.1;   % Maximum curvature
 % 
-% optimize_curves(n, Theta, S_min, S_max, kappa_min, kappa_max);
+% optimize_curves_plot(n, Theta, S_min, S_max, kappa_min, kappa_max);
+
