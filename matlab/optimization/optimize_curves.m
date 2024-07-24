@@ -1,15 +1,17 @@
 function optimize_curves(n, Theta, S_min, S_max)
     % Initial guess for segment lengths and curvatures
-    S0_min = linspace(S_min/n, S_min/n, n);
-    S0_max = linspace(S_max/n, S_max/n, n);
+    % S0_min = linspace(S_min/(n/2), S_min/(2*n), n);
+    % S0_max = linspace(S_max/(n/2), S_max/(2*n), n);
+    S0_min = [1 ;2 ;3 ;4 ]; % min = 10
+    S0_max = [100 ;200 ;300 ;400 ]; % max = 100
     kappa0_min = ones(1, n) * Theta / S_min;
     kappa0_max = ones(1, n) * Theta / S_max;
 
     % Optimization problem defined
     options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp');
     x0 = [S0_min, S0_max, kappa0_min, kappa0_max]; % Initial guess
-    lb = [0.1 * ones(1, n), 0.1 * ones(1, n), zeros(1, n), zeros(1, n)]; % Lower bounds
-    ub = [S_max/n * ones(1, n), S_max/n * ones(1, n), inf(1, n), inf(1, n)]; % Upper bounds
+    lb = [0.0 * ones(1, n), 0.0 * ones(1, n), zeros(1, n), zeros(1, n)]; % Lower bounds
+    ub = [S_max * ones(1, n), S_max * ones(1, n), inf(1, n), inf(1, n)]; % Upper bounds
 
     % Optimization function
     [x, fval] = fmincon(@objective, x0, [], [], [], [], lb, ub, @(x) constraints(x, n, Theta, S_min, S_max), options);

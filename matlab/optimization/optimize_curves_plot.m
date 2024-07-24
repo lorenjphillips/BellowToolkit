@@ -92,6 +92,8 @@ end
 
 function plot_robot_segments(g_min, g_max, n)
     figure;
+    fig = figure;
+    fig.Color = [ 1 1 1 ];
     hold on;
     colors = lines(n); % Generate n distinct colors
 
@@ -132,7 +134,6 @@ function plot_robot_segments(g_min, g_max, n)
     xlabel('X');
     ylabel('Y');
     title('Plot of Minimum and Maximum Lengths');
-    legend('Minimum Lengths', 'Maximum Lengths');
     grid on;
     hold off;
 end
