@@ -1,0 +1,137 @@
+function optimize_curves(n, Theta, S_min, S_max, kappa_min, kappa_max)
+    % Initial guess for segment lengths and curvatures
+    S0 = linspace(S_min/n, S_max/n, n);
+    kappa0 = linspace(kappa_min, kappa_max, n);
+
+    % Optimization problem defined
+    options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp');
+    x0 = [S0, kappa0]; % Initial guess
+    lb = [S_min/n * ones(1, n), kappa_min * ones(1, n)]; % Lower bounds
+    ub = [S_max/n * ones(1, n), kappa_max * ones(1, n)]; % Upper bounds
+
+    % Optimize for minimum configuration
+    [x_min, fval_min] = fmincon(@(x) objective_min(x, n, Theta), x0, [], [], [], [], lb, ub, @(x) constraints(x, n, Theta), options);
+
+    % Extract optimized segment lengths and curvatures for minimum configuration
+    S_min_opt = x_min(1:n);
+    kappa_min_opt = x_min(n+1:end);
+
+    % Scale to find maximum configuration
+    total_length_min = sum(S_min_opt);
+    scaling_factor = S_max / total_length_min;
+    S_max_opt = S_min_opt * scaling_factor;
+    kappa_max_opt = kappa_min_opt * scaling_factor;
+
+    % Ensure the curvatures maintain their ratios
+    kappa_max_opt = kappa_max_opt / sum(kappa_max_opt) * sum(kappa_min_opt);
+
+    % Compute minimum and maximum distances
+    X_min = sum((1 - cos(kappa_min_opt .* S_min_opt)) ./ kappa_min_opt);
+    X_max = sum((1 - cos(kappa_max_opt .* S_max_opt)) ./ kappa_max_opt);
+
+    % Results
+    fprintf('Optimized segment lengths for minimum configuration: \n');
+    disp(S_min_opt);
+    fprintf('Optimized curvatures for minimum configuration: \n');
+    disp(kappa_min_opt);
+    fprintf('Optimized segment lengths for maximum configuration: \n');
+    disp(S_max_opt);
+    fprintf('Optimized curvatures for maximum configuration: \n');
+    disp(kappa_max_opt);
+    fprintf('Maximum range (X_max - X_min): %f\n', X_max - X_min);
+
+    % Compute g_min and g_max using robotindependentmapping function
+    phi = zeros(n, 1); % phi is 0 for all cases
+    ptsperseg = 20; % Number of points per segment
+
+    g_min = robotindependentmapping(kappa_min_opt, phi, S_min_opt, ptsperseg);
+    g_max = robotindependentmapping(kappa_max_opt, phi, S_max_opt, ptsperseg);
+
+    % Plot the results
+    plot_robot_segments(g_min, g_max, n);
+end
+
+function f = objective_min(x, n, Theta)
+    S = x(1:n);
+    kappa = x(n+1:end);
+    f = sum((1 - cos(kappa .* S)) ./ kappa); % Objective function for minimum configuration
+end
+
+function [c, ceq] = constraints(x, n, Theta)
+    S = x(1:n);
+    kappa = x(n+1:end);
+
+    % Nonlinear equality constraints
+    ceq = sum(kappa .* S) - Theta; % Maintain viewing angle
+    
+    % Nonlinear inequality constraints
+    c = []; % None in this case
+end
+
+function plot_robot_segments(g_min, g_max, n)
+    figure;
+    hold on;
+    colors = lines(n); % Generate n distinct colors
+
+    % Plot minimum lengths configuration
+    for idx = 1:n
+        seg_end = idx * 20; % Assuming ptsperseg = 20
+        if idx == 1
+            seg_start = 1;
+        else
+            seg_start = (idx - 1) * 20 + 1;
+        end
+        
+        vx = g_min(seg_end, 9); % Extract the components of the vector
+        vy = g_min(seg_end, 10);
+        vz = g_min(seg_end, 11);
+        x = g_min(seg_end, 13); % Extract the origin of the vector
+        y = g_min(seg_end, 14);
+        z = g_min(seg_end, 15);
+        
+        % Plot the vector using quiver
+        quiver(x, z, vx, vz, 'AutoScale', 'on', 'AutoScaleFactor', 0.05, 'MaxHeadSize', 0.01, 'Color', colors(idx, :));
+        
+        % Plot the backbone
+        plot(g_min(seg_start:seg_end, 13), g_min(seg_start:seg_end, 15), 'LineWidth', 2, 'Color', colors(idx, :));
+    end
+
+    % Plot maximum lengths configuration
+    for idx = 1:n
+        seg_end = idx * 20; % Assuming ptsperseg = 20
+        if idx == 1
+            seg_start = 1;
+        else
+            seg_start = (idx - 1) * 20 + 1;
+        end
+        
+        vx = g_max(seg_end, 9); % Extract the components of the vector
+        vy = g_max(seg_end, 10);
+        vz = g_max(seg_end, 11);
+        x = g_max(seg_end, 13); % Extract the origin of the vector
+        y = g_max(seg_end, 14);
+        z = g_max(seg_end, 15);
+        
+        % Plot the vector using quiver
+        quiver(x, z, vx, vz, 'AutoScale', 'on', 'AutoScaleFactor', 0.05, 'MaxHeadSize', 0.01, 'Color', colors(idx, :));
+        
+        % Plot the backbone
+        plot(g_max(seg_start:seg_end, 13), g_max(seg_start:seg_end, 15), 'LineWidth', 2, 'Color', colors(idx, :));
+    end
+
+    xlabel('X');
+    ylabel('Y');
+    title('Plot of Minimum and Maximum Lengths');
+    grid on;
+    hold off;
+end
+% 
+% % Example usage
+% n = 5;             % Number of segments
+% Theta = 1;         % Target viewing angle (radians)
+% S_min = 5;         % Minimum total length
+% S_max = 10;        % Maximum total length
+% kappa_min = 0.01;  % Minimum curvature
+% % kappa_max = 0.1;   % Maximum curvature
+% 
+% optimize_curves_plot(n, Theta, S_min, S_max, kappa_min, kappa_max);
