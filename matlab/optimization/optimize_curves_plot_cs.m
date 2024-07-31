@@ -80,7 +80,7 @@ function f = objective(x)
     X_max = sum((1 - cos(kappa_max .* S_max)) ./ kappa_max);
 
     % Objective function (maximize X_max - X_min)
-    f = -(X_max - X_min);
+    f = -(X_max - X_min)^2;
 end
 
 function [c, ceq] = constraints(x, n, Theta, S_min, S_max)
