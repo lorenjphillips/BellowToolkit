@@ -1,4 +1,4 @@
-function optimize_curves_plot(n, Theta, S_min, S_max)
+function optimize_curves_plot_cs(n, Theta, S_min, S_max)
     % Initial guess for segment lengths and curvatures
     % Generate random values for min/max initial guesses
     random_min_values = rand(1, n);
@@ -6,19 +6,28 @@ function optimize_curves_plot(n, Theta, S_min, S_max)
     normalized_min_values = random_min_values / sum(random_min_values);
     normalized_max_values = random_max_values / sum(random_max_values);
     S0_min = normalized_min_values * S_min;
-    S0_max = normalized_max_values * S_max * 10; % SCALING WILL NOT WORK FOR ALL CASES!!! Will it?
+    S0_max = normalized_max_values * S_max;
 
-    kappa0_min = ones(1, n) * Theta / S_min;
-    kappa0_max = ones(1, n) * Theta / S_max;
-        % Adjust bounds if needed
-    S_max_bound = S_max/n * 2; % Adjust this as necessary
-    S_min_bound = 0.1; % Adjust this as necessary
-    
+    % Initial guesses for curvatures
+    kappa0_min = max(rand(1, n) * Theta / S_min, 1e-6); % Avoid zero curvatures
+    ratio_kappa = kappa0_min / kappa0_min(1); % Ratio of curvatures
+
+    % Compute corresponding maximum curvatures maintaining the ratio
+    kappa0_max = ratio_kappa * (Theta / S_max) * (S_max / S_min);
+
     % Optimization problem defined
-    options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp');
+    options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp', ...
+                           'MaxFunctionEvaluations', 10000, 'ConstraintTolerance', 1e-6);
+
+    % Ensure x0 is within the bounds
     x0 = [S0_min, S0_max, kappa0_min, kappa0_max]; % Initial guess
-    lb = [S_min_bound * ones(1, n), S_min_bound * ones(1, n), zeros(1, n), zeros(1, n)]; % Lower bounds
-    ub = [S_max_bound * ones(1, n), S_max_bound * ones(1, n), inf(1, n), inf(1, n)]; % Upper bounds
+
+    % Define lower and upper bounds
+    lb = [zeros(1, n), zeros(1, n), zeros(1, n), zeros(1, n)]; % Lower bounds
+    ub = [ones(1, n) * S_min, ones(1, n) * S_max, inf(1, n), inf(1, n)]; % Upper bounds
+
+    % Adjust x0 to fit within lb and ub
+    x0 = max(lb, min(x0, ub));
 
     % Optimization function
     [x, fval] = fmincon(@objective, x0, [], [], [], [], lb, ub, @(x) constraints(x, n, Theta, S_min, S_max), options);
@@ -62,6 +71,10 @@ function f = objective(x)
     kappa_min = x(2*n+1:3*n);
     kappa_max = x(3*n+1:4*n);
 
+    % Avoid division by zero or near-zero values
+    kappa_min = max(kappa_min, 1e-6);
+    kappa_max = max(kappa_max, 1e-6);
+
     % Calculate minimum and maximum distances
     X_min = sum((1 - cos(kappa_min .* S_min)) ./ kappa_min);
     X_max = sum((1 - cos(kappa_max .* S_max)) ./ kappa_max);
@@ -76,22 +89,25 @@ function [c, ceq] = constraints(x, n, Theta, S_min, S_max)
     kappa_min_opt = x(2*n+1:3*n);
     kappa_max_opt = x(3*n+1:4*n);
 
+    % Avoid division by zero or near-zero values
+    kappa_min_opt = max(kappa_min_opt, 1e-6);
+    kappa_max_opt = max(kappa_max_opt, 1e-6);
+
     % Nonlinear equality constraints
     ceq1 = sum(kappa_min_opt .* S_min_opt) - Theta; % Maintain viewing angle for minimum configuration
     ceq2 = sum(kappa_max_opt .* S_max_opt) - Theta; % Maintain viewing angle for maximum configuration
-    ceq = [ceq1; ceq2];
+    ceq3 = kappa_max_opt / kappa_max_opt(1) - kappa_min_opt / kappa_min_opt(1); % Maintain curvature ratio
+    ceq4 = S_max_opt / S_max_opt(1) - S_min_opt / S_min_opt(1); % Maintain length ratio
+    ceq5 = sum(S_max_opt) - S_max; % Total length of maximum configuration must be S_max
+    ceq = [ceq1; ceq2; ceq3(:); ceq4(:); ceq5];
     
     % Nonlinear inequality constraints
-    % Ensure segment lengths stay within reasonable range
-    max_segment_length = S_max / 2; % Example upper bound for segment length
-    min_segment_length = 0.1; % Example lower bound for segment length
-    c3 = S_min_opt - max_segment_length;
-    c4 = min_segment_length - S_min_opt;
-    c5 = S_max_opt - max_segment_length;
-    c6 = min_segment_length - S_max_opt;
+    c1 = 1 ./ kappa_min_opt - S_min_opt / pi; % Limit curvature for minimum configuration
+    c2 = 1 ./ kappa_max_opt - S_max_opt / pi; % Limit curvature for maximum configuration
+    c3 = S_min - sum(S_min_opt); % Total length of minimum configuration must be >= S_min
 
     % Ensure all constraints have consistent dimensions
-    c = [c3(:); c4(:); c5(:); c6(:)];
+    c = [c1(:); c2(:); c3];
 end
 
 function plot_robot_segments(g_min, g_max, n)
@@ -141,3 +157,11 @@ function plot_robot_segments(g_min, g_max, n)
     grid on;
     hold off;
 end
+
+% % Example usage
+% n = 5;             % Number of segments
+% Theta = pi;        % Target viewing angle (radians)
+% S_min = 5;         % Minimum total length
+% S_max = 10;        % Maximum total length
+% 
+% optimize_curves_plot_cs(n, Theta, S_min, S_max);
