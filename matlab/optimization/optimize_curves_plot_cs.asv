@@ -1,7 +1,7 @@
 function optimize_curves_plot_cs(n, Theta, S_min, S_max)
     
-    % Initial guess for segment lengths and curvatures
-    [S0_min, S0_max, kappa0_min, kappa0_max] = initialize_random_guesses(n, Theta, S_min, S_max);
+% Initial guess for segment lengths and curvatures
+    initialize_random_guesses(n, Theta, S_min, S_max)
 
     % Optimization problem defined
     options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp', ...
