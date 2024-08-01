@@ -1,5 +1,4 @@
 function optimize_curves_plot_cs(n, Theta, S_min, S_max)
-    
     % Initial guess for segment lengths and curvatures
     [S0_min, S0_max, kappa0_min, kappa0_max] = initialize_random_guesses(n, Theta, S_min, S_max);
 
@@ -126,9 +125,10 @@ function [c, ceq] = constraints(x, n, Theta, S_min, S_max)
     c1 = 1 ./ kappa_min_opt - S_min_opt / pi; % Limit curvature for minimum configuration
     c2 = 1 ./ kappa_max_opt - S_max_opt / pi; % Limit curvature for maximum configuration
     c3 = S_min - sum(S_min_opt); % Total length of minimum configuration must be >= S_min
+    c4 = S_min / (100 * n) - S_min_opt; % Ensure each segment in min config is >= 1/n% of S_min
 
     % Ensure all constraints have consistent dimensions
-    c = [c1(:); c2(:); c3];
+    c = [c1(:); c2(:); c3; c4(:)];
 end
 
 function plot_robot_segments(g_min, g_max, n)
