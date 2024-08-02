@@ -1,7 +1,6 @@
 function optimize_curves_plot_cs(n, Theta, S_min, S_max)
-    
-% Initial guess for segment lengths and curvatures
-    initialize_random_guesses(n, Theta, S_min, S_max)
+    % Initial guess for segment lengths and curvatures
+    [S0_min, S0_max, kappa0_min, kappa0_max] = initialize_random_guesses(n, Theta, S_min, S_max);
 
     % Optimization problem defined
     options = optimoptions('fmincon', 'Display', 'iter', 'Algorithm', 'sqp', ...
@@ -71,8 +70,9 @@ function f = objective(x)
     f = -(X_max - X_min)^2;
 end
 
-function [S0_min, S0_max, kappa0_min, kappa0_max] = initialize_random_guesses(n, Theta, S_min, S_max)
-    % Generate random ratios
+function [S0_min, S0_max, kappa0_min, kappa0_max] = initialize_random_guesses(n, Theta)
+    %{ 
+% Generate random ratios
     random_ratios = rand(1, n);
     normalized_ratios = random_ratios / sum(random_ratios);
 
@@ -81,6 +81,7 @@ function [S0_min, S0_max, kappa0_min, kappa0_max] = initialize_random_guesses(n,
     
     % Scale up for maximum configuration while maintaining the same ratios
     S0_max = normalized_ratios * S_max;
+    %}
     
     % Generate random curvature ratios for initial curvatures
     random_curvature_ratios = rand(1, n);
@@ -104,7 +105,7 @@ function [S0_min, S0_max, kappa0_min, kappa0_max] = initialize_random_guesses(n,
     kappa0_max = kappa0_max * (Theta / sum(kappa0_max .* S0_max));
 end
 
-function [c, ceq] = constraints(x, n, Theta, S_min, S_max)
+function [c, ceq] = constraints(x, n, Theta) %, S_min, S_max)
     S_min_opt = x(1:n);
     S_max_opt = x(n+1:2*n);
     kappa_min_opt = x(2*n+1:3*n);
@@ -118,17 +119,18 @@ function [c, ceq] = constraints(x, n, Theta, S_min, S_max)
     ceq1 = sum(kappa_min_opt .* S_min_opt) - Theta; % Maintain viewing angle for minimum configuration
     ceq2 = sum(kappa_max_opt .* S_max_opt) - Theta; % Maintain viewing angle for maximum configuration
     ceq3 = kappa_max_opt / kappa_max_opt(1) - kappa_min_opt / kappa_min_opt(1); % Maintain curvature ratio
-    ceq4 = S_max_opt / S_max_opt(1) - S_min_opt / S_min_opt(1); % Maintain length ratio
-    ceq5 = sum(S_max_opt) - S_max; % Total length of maximum configuration must be S_max
-    ceq = [ceq1; ceq2; ceq3(:); ceq4(:); ceq5];
+    % ceq4 = S_max_opt / S_max_opt(1) - S_min_opt / S_min_opt(1); % Maintain length ratio
+    % ceq5 = sum(S_max_opt) - S_max; % Total length of maximum configuration must be S_max
+    ceq = [ceq1; ceq2; ceq3(:)]; %  ceq4(:); ceq5];
     
     % Nonlinear inequality constraints
     c1 = 1 ./ kappa_min_opt - S_min_opt / pi; % Limit curvature for minimum configuration
     c2 = 1 ./ kappa_max_opt - S_max_opt / pi; % Limit curvature for maximum configuration
-    c3 = S_min - sum(S_min_opt); % Total length of minimum configuration must be >= S_min
+    % c3 = S_min - sum(S_min_opt); % Total length of minimum configuration must be >= S_min
+    % c4 = S_min / (100 * n) - S_min_opt; % Ensure each segment in min config is >= 1/n% of S_min
 
     % Ensure all constraints have consistent dimensions
-    c = [c1(:); c2(:); c3];
+    c = [c1(:); c2(:)]; % c3; c4(:)];
 end
 
 function plot_robot_segments(g_min, g_max, n)
@@ -178,11 +180,3 @@ function plot_robot_segments(g_min, g_max, n)
     grid on;
     hold off;
 end
-
-% % Example usage
-% n = 5;             % Number of segments
-% Theta = pi;        % Target viewing angle (radians)
-% S_min = 5;         % Minimum total length
-% S_max = 10;        % Maximum total length
-% 
-% optimize_curves_plot_cs(n, Theta, S_min, S_max);
